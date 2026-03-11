@@ -1,0 +1,32 @@
+project:
+  name: My Infrastructure
+servers:
+  production-01:
+    host: 192.168.1.10
+    credentials:
+       user: admin
+       ssh-key: ~/.ssh/id_rsa
+    sar:
+      enabled: true
+    webapps:
+      main-api:
+        url: https://api.example.com/health
+      dashboard:
+        url: https://app.example.com/
+    docker:
+      status: true
+  backup-node:
+    host: backup.example.local
+    credentials:
+      user: backupuser
+      password: "secretpassword"
+    webapps:
+      minio:
+        url: http://localhost:9000
+        ignore-certificate: true
+alert:
+  telegram:
+     enabled: true
+     mode: error # only send if issues are detected
+     token: 123456789:ABCDefghIJKLmnoPQRstuvwxYZ
+     chat-id: 123456789

@@ -1,0 +1,20 @@
+[project]
+name = "My TOML Infrastructure"
+
+[servers.web-server]
+host = "10.0.0.5"
+docker = { status = true }
+sar = { enabled = true }
+
+[servers.web-server.credentials]
+user = "root"
+ssh-key = "~/.ssh/id_rsa"
+
+[servers.web-server.webapps.my-blog]
+url = "https://blog.example.com"
+
+[alert.telegram]
+enabled = false
+mode = "always"
+token = "bot-token"
+chat-id = "chat-id"
