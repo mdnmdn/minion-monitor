@@ -46,12 +46,25 @@ go build -o bin/minion-mon .
 1. Create a `hosts.yaml` (see `sample-hosts.yaml`).
 2. Run the monitor:
    ```bash
-   ./bin/minion-mon
+   minion-mon
    ```
 3. Generate a Markdown report:
    ```bash
-   ./bin/minion-mon --format markdown
+   minion-mon --format markdown
    ```
+
+## Usage
+
+```bash
+minion-mon [flags]
+```
+
+### Flags
+- `-c, --config string`: Path to config file (default "hosts.yaml").
+- `-f, --format string`: Output format: `text`, `markdown`, `json`, `yaml` (default "text").
+- `-v, --verbose`: Verbose mode (shows top 10 processes).
+- `--hard-fail`: Exit with non-zero code if any error/warning is detected (useful for CI).
+- `-h, --help`: Help for minion-mon.
 
 ## Documentation
 
