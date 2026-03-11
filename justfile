@@ -30,7 +30,3 @@ clean:
 # Install dependencies
 deps:
     go mod tidy
-    go get github.com/spf13/cobra
-    go get gopkg.in/yaml.v3
-    go get github.com/pelletier/go-toml/v2
-    go get golang.org/x/crypto/ssh

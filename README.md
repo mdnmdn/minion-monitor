@@ -25,11 +25,14 @@ A simple, lightweight Go CLI tool to monitor your infrastructure via SSH and HTT
 
 ## Installation
 
-### Prerequisites
-- Go 1.18+
-- [Just](https://github.com/casey/just) (optional, but recommended)
+### Via Go Install (Recommended)
+You can install the tool globally on your system:
+```bash
+go install github.com/mdnmdn/minion-monitor@latest
+```
+*Note: Ensure your `$GOPATH/bin` is in your `$PATH`.*
 
-### Build
+### From Source
 ```bash
 just build
 ```
