@@ -1,2 +1,6 @@
 minion-mon
 .env
+./bin
+
+host*.toml
+host*.yaml
