@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,13 +19,36 @@ type FullReport struct {
 	HasErrors bool            `json:"has_errors" yaml:"has_errors"`
 }
 
-func main() {
-	configPath := flag.String("config", "hosts.yaml", "Path to config file (yaml or toml)")
-	verbose := flag.Bool("v", false, "Verbose mode (show top processes)")
-	format := flag.String("format", "text", "Output format: text, markdown, json, yaml")
-	flag.Parse()
+var (
+	configPath string
+	verbose    bool
+	format     string
+	hardFail   bool
+)
 
-	config, err := LoadConfig(*configPath)
+func main() {
+	var rootCmd = &cobra.Command{
+		Use:   "minion-mon",
+		Short: "A simple server and webapp monitoring tool",
+		Long:  `A Go CLI tool that generates reports about servers (via SSH) and web applications (via HTTP).`,
+		Run: func(cmd *cobra.Command, args []string) {
+			runMonitor()
+		},
+	}
+
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "hosts.yaml", "Path to config file (yaml or toml)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose mode (show top processes)")
+	rootCmd.PersistentFlags().StringVarP(&format, "format", "f", "text", "Output format: text, markdown, json, yaml")
+	rootCmd.PersistentFlags().BoolVar(&hardFail, "hard-fail", false, "Exit with non-zero code if any error is detected")
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func runMonitor() {
+	config, err := LoadConfig(configPath)
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -35,10 +59,10 @@ func main() {
 	}
 
 	for name, server := range config.Servers {
-		if *format == "text" {
+		if format == "text" {
 			fmt.Printf("Checking server: %s (%s)...\n", name, server.Host)
 		}
-		report, err := CheckServer(name, server, *verbose)
+		report, err := CheckServer(name, server, verbose)
 		if err != nil {
 			// Mock a report with error info
 			errReport := &ServerReport{Name: name, OS: fmt.Sprintf("ERROR: %v", err)}
@@ -60,8 +84,8 @@ func main() {
 		}
 	}
 
-	output := ""
-	switch *format {
+	var output string
+	switch format {
 	case "json":
 		data, _ := json.MarshalIndent(fullReport, "", "  ")
 		output = string(data)
@@ -71,7 +95,7 @@ func main() {
 	case "markdown":
 		output = generateMarkdown(fullReport)
 	default:
-		output = generateText(fullReport, *verbose)
+		output = generateText(fullReport, verbose)
 	}
 
 	fmt.Println(output)
@@ -86,12 +110,15 @@ func main() {
 		}
 
 		if shouldSend {
-			if *format == "text" {
+			if format == "text" {
 				fmt.Println("Sending Telegram notification...")
 			}
-			// Always send text to Telegram for readability
-			SendTelegram(config.Alert.Telegram.Token, config.Alert.Telegram.ChatID, generateText(fullReport, *verbose))
+			SendTelegram(config.Alert.Telegram.Token, config.Alert.Telegram.ChatID, generateText(fullReport, verbose))
 		}
+	}
+
+	if hardFail && fullReport.HasErrors {
+		os.Exit(1)
 	}
 }
 
